@@ -26,7 +26,8 @@ var PHASES = [
     {n:'Prancha no chão (de joelhos)', r:'20–30 s', hold:20, t:'Quando ficar fácil, tente com os pés apoiados.'}
   ]}
 ];
-var DAYS = ['Seg','Qua','Sex'], OFFS = [0,2,4];
+var WD = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'], TRAIN = [1,3,5]; /* dias de treino: seg, qua, sex */
+function dname(dt){ return WD[dt.getDay()]; }
 var WARM = 'Aquecimento de 5 min: marcha no lugar, círculos de ombros e quadril, sentar e levantar devagar.';
 var ALL = [];
 for (var w=1; w<=12; w++) for (var d=0; d<3; d++) ALL.push(w+'-'+d);
@@ -37,7 +38,7 @@ var state = fresh();
 var view = {tab:'hoje', sid:null};
 var ref = null, syncMsg = 'Só neste aparelho', writing = false, pending = false, saveT = null;
 
-function fresh(){ return {v:1, start:'2026-11-16', rest:90, prog:{}, done:{}, meas:{}}; }
+function fresh(){ return {v:1, start:'2026-11-11', rest:90, prog:{}, done:{}, meas:{}}; }
 function mergeState(d){
   var f = fresh(); if(!d || typeof d !== 'object') return f;
   return {v:1, start: typeof d.start==='string' && /^\d{4}-\d{2}-\d{2}$/.test(d.start) ? d.start : f.start,
@@ -63,7 +64,13 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ re
 function pad(n){ return n<10 ? '0'+n : ''+n; }
 function iso(dt){ return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate()); }
 function startDate(){ var p = state.start.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); }
-function dateOf(w, d){ var s = startDate(); return new Date(s.getFullYear(), s.getMonth(), s.getDate() + (w-1)*7 + OFFS[d]); }
+/* O treino n (0..35) cai no n-ésimo dia de treino (seg/qua/sex) a partir da data de início. */
+function dateOf(w, d){
+  var s = startDate(), n = (w-1)*3 + d, dt = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+  while(TRAIN.indexOf(dt.getDay()) < 0) dt.setDate(dt.getDate()+1);
+  for(var i=0; i<n; i++){ do { dt.setDate(dt.getDate()+1); } while(TRAIN.indexOf(dt.getDay()) < 0); }
+  return dt;
+}
 function fmt(dt){ return pad(dt.getDate())+'/'+pad(dt.getMonth()+1); }
 function phaseOf(w){ for(var i=0;i<PHASES.length;i++) if(w>=PHASES[i].from && w<=PHASES[i].to) return PHASES[i]; return PHASES[2]; }
 function num(v){ if(v==null || v==='') return null; var n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; }
@@ -151,7 +158,7 @@ function renderTop(){
   document.getElementById('k-treinos').textContent = n + '/' + ALL.length;
   document.getElementById('k-semana').textContent = cur.w + '/12';
   document.getElementById('k-series').textContent = totalSets();
-  document.getElementById('eyebrow').textContent = cur.ph.name + ' · ' + DAYS[cur.d] + ' ' + fmt(cur.date);
+  document.getElementById('eyebrow').textContent = cur.ph.name + ' · ' + dname(cur.date) + ' ' + fmt(cur.date);
   document.getElementById('sync').textContent = syncMsg;
   var tabs = document.querySelectorAll('.tab');
   for(var i=0;i<tabs.length;i++){ if(tabs[i].getAttribute('data-tab') === view.tab) tabs[i].setAttribute('aria-current','page'); else tabs[i].removeAttribute('aria-current'); }
@@ -168,7 +175,7 @@ function vHoje(){
   var idx = ALL.indexOf(S.sid), h = '';
   h += '<div class="card"><div class="session-head">'
     + '<button type="button" class="nav" data-act="nav" data-n="-1" aria-label="Treino anterior"' + (idx===0?' disabled':'') + '>‹</button>'
-    + '<div style="text-align:center"><h2>' + DAYS[S.d] + ' · ' + fmt(S.date) + '</h2>'
+    + '<div style="text-align:center"><h2>' + dname(S.date) + ' · ' + fmt(S.date) + '</h2>'
     + '<div class="row" style="justify-content:center;margin-top:4px"><span class="pill">Semana ' + S.w + '</span><span class="pill">' + S.ph.name + '</span>'
     + (today ? '<span class="pill today">Hoje</span>' : '') + (dn ? '<span class="pill ok">Concluído</span>' : '') + '</div></div>'
     + '<button type="button" class="nav" data-act="nav" data-n="1" aria-label="Próximo treino"' + (idx===ALL.length-1?' disabled':'') + '>›</button></div></div>';
@@ -215,7 +222,7 @@ function vPlano(){
     h += '<div class="week"><div><b>Sem ' + w + '</b><div class="small muted">' + phaseOf(w).name + '</div></div><div class="chips">';
     for(var d=0; d<3; d++){
       var sid = w+'-'+d, dn = !!state.done[sid];
-      h += '<button type="button" class="chip' + (dn?' done':'') + (sid===nx && !dn?' cur':'') + '" data-act="open" data-sid="'+sid+'">' + DAYS[d] + '<br>' + fmt(dateOf(w,d)) + (dn?' ✓':'') + '</button>';
+      h += '<button type="button" class="chip' + (dn?' done':'') + (sid===nx && !dn?' cur':'') + '" data-act="open" data-sid="'+sid+'">' + dname(dateOf(w,d)) + '<br>' + fmt(dateOf(w,d)) + (dn?' ✓':'') + '</button>';
     }
     h += '</div></div>';
   }
@@ -224,7 +231,7 @@ function vPlano(){
 
 function vMedidas(){
   var h = '<div id="msum" class="card stack">' + medSummary() + '</div>';
-  h += '<div class="card"><div class="small muted" style="margin-bottom:10px">Meça toda segunda-feira, em jejum e no mesmo horário. A semana 0 é a medida inicial.</div>'
+  h += '<div class="card"><div class="small muted" style="margin-bottom:10px">Meça uma vez por semana, no dia do primeiro treino, em jejum e no mesmo horário. A semana 0 é a medida inicial.</div>'
     + '<div class="grid-m"><span class="h">Sem</span><span class="h">Peso (kg)</span><span class="h">Cintura (cm)</span><span class="h">Caminhada (min)</span>';
   for(var k=0; k<=12; k++){
     var m = state.meas[k] || {};
@@ -234,7 +241,7 @@ function vMedidas(){
       + '<input type="text" inputmode="numeric" aria-label="Minutos de caminhada na semana '+k+'" data-wk="'+k+'" data-f="walk" value="' + esc(m.walk!=null?m.walk:'') + '">';
   }
   h += '</div></div>';
-  h += '<div class="card"><label class="f" for="start">Data de início (segunda-feira)<input type="date" id="start" value="' + esc(state.start) + '"></label>'
+  h += '<div class="card"><label class="f" for="start">Data de início (dia do primeiro treino)<input type="date" id="start" value="' + esc(state.start) + '"></label>'
     + '<div class="small muted" style="margin-top:8px">Mudar a data reajusta as datas de todos os treinos.</div></div>';
   return h;
 }

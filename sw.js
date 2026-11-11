@@ -1,6 +1,6 @@
 // Service worker: deixa o app funcionando offline.
 // Ao mudar qualquer arquivo do app, aumente a versão abaixo para o celular baixar a nova versão.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const APP_CACHE = 'calistenia-app-' + VERSION;
 const FONT_CACHE = 'calistenia-fonts';
 
