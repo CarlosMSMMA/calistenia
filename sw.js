@@ -1,6 +1,6 @@
 // Service worker: deixa o app funcionando offline.
 // Ao mudar qualquer arquivo do app, aumente a versão abaixo para o celular baixar a nova versão.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const APP_CACHE = 'calistenia-app-' + VERSION;
 const FONT_CACHE = 'calistenia-fonts';
 
@@ -17,7 +17,9 @@ const APP_FILES = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(APP_CACHE).then((c) => c.addAll(APP_FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' ignora o cache HTTP do navegador e garante que os arquivos novos sejam baixados.
+  const reqs = APP_FILES.map((u) => new Request(u, { cache: 'reload' }));
+  event.waitUntil(caches.open(APP_CACHE).then((c) => c.addAll(reqs)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
