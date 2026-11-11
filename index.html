@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calistenia em Casa</title>
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Calistenia">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <div class="hero-row"><span class="brand"><img class="logo" src="icons/icon-192.png" alt="" width="40" height="40"><span class="eyebrow" id="eyebrow">Plano de 12 semanas</span></span><span class="sync" id="sync">Carregando…</span></div>
+    <h1>Calistenia<br>em casa</h1>
+    <div class="counters">
+      <div class="counter"><b id="k-treinos">0/36</b><span>Treinos</span></div>
+      <div class="counter"><b id="k-semana">1/12</b><span>Semana</span></div>
+      <div class="counter"><b id="k-series">0</b><span>Séries feitas</span></div>
+    </div>
+    <div class="meter" role="progressbar" aria-label="Treinos concluídos" id="meter" aria-valuemin="0" aria-valuemax="36" aria-valuenow="0"><i id="meter-i" style="width:0%"></i></div>
+    <span class="ghost" aria-hidden="true">TREINO</span>
+  </div>
+</header>
+<div class="app">
+  <main id="view" class="stack"></main>
+</div>
+
+<div class="dock" id="dock" hidden>
+  <div class="dock-in">
+    <div class="dock-main">
+      <div><div class="dock-label" id="dl">Descanso</div><div class="dock-time" id="dt" aria-live="off">1:30</div></div>
+      <div class="dock-btns">
+        <button type="button" class="hide-fin" data-act="tadd" data-n="-15" aria-label="Menos 15 segundos">−15</button>
+        <button type="button" class="hide-fin" data-act="tadd" data-n="15" aria-label="Mais 15 segundos">+15</button>
+        <button type="button" class="hide-fin" data-act="tpause" id="dp">Pausar</button>
+        <button type="button" class="main" data-act="tstop" id="ds">Parar</button>
+      </div>
+    </div>
+    <div class="bar"><i id="db"></i></div>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Seções"><div class="tabs-in">
+  <button type="button" class="tab" data-act="tab" data-tab="hoje">Treino</button>
+  <button type="button" class="tab" data-act="tab" data-tab="plano">Plano</button>
+  <button type="button" class="tab" data-act="tab" data-tab="medidas">Medidas</button>
+</div></nav>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js'); });
+}
+</script>
+</body>
+</html>
